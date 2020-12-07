@@ -72,11 +72,6 @@ window.onkeypress=function(evt){
 //     console.log({"key":evt.key})
 }
 
-div_play.onclick=function(){
-    ws.send(JSON.stringify({cmd:"pause",data:div_play.innerHTML}))
-    div_play.innerHTML=div_play.innerHTML=="⏹️"?"▶️":"⏹️"
-    div_play.manual=true
-}
 function pick(mouse){
     var intersect=null
     var intersect_range=1000
