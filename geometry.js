@@ -34,12 +34,31 @@ class Grid extends THREE.LineSegments {
 		this.centerLineColor = centerLineColor
 		this.commonLineColor = commonLineColor
 	}
-	update(step, divisions) {
+	set(step, divisions) {
 		const attributes = Grid.attributes(step, divisions, this.centerLineColor, this.commonLineColor)
 		this.geometry.setAttribute('position', new THREE.Float32BufferAttribute(attributes.vertices, 3));
 		this.geometry.setAttribute('color', new THREE.Float32BufferAttribute(attributes.colors, 3));
 		this.geometry.colorsNeedUpdate = true
 		this.geometry.verticesNeedUpdate = true
 		this.geometry.computeBoundingSphere()
+	}
+}
+
+class Line extends THREE.Line {
+	constructor() {
+		let geometry = new THREE.BufferGeometry()
+		let material = new THREE.LineBasicMaterial()
+		super(geometry, material)
+		this.color = this.material.color
+		this.lineWidth = this.material.linewidth
+		this.points = []
+	}
+	set(points) {
+		this.points = points
+		this.geometry.setFromPoints(points)
+	}
+	add(point) {
+		this.points.push(point)
+		this.geometry.setFromPoints(this.points)
 	}
 }
