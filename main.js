@@ -122,19 +122,6 @@ function Sphere() {
     return obj
 }
 
-function Cylinder(top_radius, bottom_radius, height, material = new THREE.MeshLambertMaterial({ color: 'white' })) {
-    var geometry = new THREE.CylinderGeometry(top_radius, bottom_radius, height, 32)
-    var cylinder = new THREE.Mesh(geometry, material)
-    cylinder.set_axis = function (direction) {
-        direction.normalize()
-        var axis = new THREE.Vector3().crossVectors(this.up, direction)
-        var angle = this.up.angleTo(direction)
-        axis.normalize()
-        this.setRotationFromAxisAngle(axis, angle)
-    }
-    return cylinder
-}
-
 function Pipe(cross, path) {
     var length = 12, width = 8;
 

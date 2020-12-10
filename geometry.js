@@ -62,3 +62,56 @@ class Line extends THREE.Line {
 		this.geometry.setFromPoints(this.points)
 	}
 }
+
+class Cylinder extends THREE.Mesh {
+	axis_ = new THREE.Vector3(0, 1, 0)
+	topCenter_ = new THREE.Vector3(0, -1, 0)
+	bottomCenter_ = new THREE.Vector3(0, 1, 0)
+	constructor() {
+		var geometry = new THREE.CylinderGeometry(1, 1, 2, 32)
+		var material = new THREE.MeshLambertMaterial({ transparent: true, color: "grey" });
+		super(geometry, material)
+		this.color = this.material.color
+	}
+	get axis() {
+		return this.axis_
+	}
+	set axis(value) {
+		this.axis_.copy(value.normalize())
+		var axis = new THREE.Vector3().crossVectors(this.up, value).normalize()
+		var angle = this.up.angleTo(value)
+		this.setRotationFromAxisAngle(axis, angle)
+	}
+	get radiusTop() {
+		return this.geometry.parameters.radiusTop
+	}
+	set radiusTop(value) {
+		this.geometry = new THREE.CylinderGeometry(value, this.geometry.parameters.radiusBottom, this.geometry.parameters.height, this.geometry.parameters.radialSegments)
+	}
+	get radiusBottom() {
+		return this.geometry.parameters.radiusBottom
+	}
+	set radiusBottom(value) {
+		this.geometry = new THREE.CylinderGeometry(this.geometry.parameters.radiusTop, value, this.geometry.parameters.height, this.geometry.parameters.radialSegments)
+	}
+	get height() {
+		return this.geometry.parameters.height
+	}
+	set height(value) {
+		this.geometry = new THREE.CylinderGeometry(this.geometry.parameters.radiusTop, this.geometry.parameters.radiusBottom, value, this.geometry.parameters.radialSegments)
+	}
+	get topCenter() {
+		return this.topCenter_
+	}
+	set topCenter(value) {
+		this.topCenter_.copy(value)
+		this.position.copy(new THREE.Vector3().subVectors(value, this.axis.multiplyScalar(this.geometry.parameters.height / 2)))
+	}
+	get bottomCenter() {
+		return this.bottomCenter
+	}
+	set bottomCenter(value) {
+		this.bottomCenter.copy(value)
+		this.position.copy(new THREE.Vector3().addVectors(value, this.axis.multiplyScalar(this.geometry.parameters.height / 2)))
+	}
+}
