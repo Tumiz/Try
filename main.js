@@ -18,9 +18,10 @@ var orthoCamera = new THREE.OrthographicCamera(
     1, 1000);
 orthoCamera.up.set(0, 0, 1)
 orthoCamera.position.copy(perspCamera.position)
-var renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.documentElement.appendChild(renderer.domElement);
+var renderer = new THREE.WebGLRenderer({
+    canvas:canvas
+});
+renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 
 var light = new THREE.PointLight(0xffffff, 1);
 light.position.set(1000, 1000, 1000)
@@ -41,9 +42,7 @@ window.requestAnimationFrame(animate);
 var raycaster = new THREE.Raycaster();
 var mouse = new THREE.Vector2();
 var selected = null
-var div_info = document.getElementById("info")
-var div_play = document.getElementById("btn")
-var div_userdefined = document.getElementById("userdefined")
+
 window.onclick = function (event) {
 
     // calculate mouse position in normalized device coordinates
