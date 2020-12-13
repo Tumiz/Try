@@ -47,7 +47,7 @@ class Grid extends THREE.LineSegments {
 class Line extends THREE.Line {
 	constructor() {
 		let geometry = new THREE.BufferGeometry()
-		let material = new THREE.LineBasicMaterial()
+		const material = new THREE.LineBasicMaterial()
 		super(geometry, material)
 		this.color = this.material.color
 		this.lineWidth = this.material.linewidth
@@ -69,7 +69,7 @@ class Cylinder extends THREE.Mesh {
 	bottomCenter_ = new THREE.Vector3(0, 1, 0)
 	constructor() {
 		var geometry = new THREE.CylinderGeometry(1, 1, 2, 32)
-		var material = new THREE.MeshLambertMaterial({ transparent: true, color: "grey" });
+		const material = new THREE.MeshLambertMaterial({ transparent: true, color: "grey" });
 		super(geometry, material)
 		this.color = this.material.color
 	}
@@ -113,5 +113,124 @@ class Cylinder extends THREE.Mesh {
 	set bottomCenter(value) {
 		this.bottomCenter.copy(value)
 		this.position.copy(new THREE.Vector3().addVectors(value, this.axis.multiplyScalar(this.geometry.parameters.height / 2)))
+	}
+}
+
+class Sphere extends THREE.Mesh {
+	constructor() {
+		var geometry = new THREE.SphereGeometry(1, 32, 32);
+		const material = new THREE.MeshLambertMaterial({ transparent: true, color: 0x00ff00 });
+		super(geometry, material)
+		this.color = this.material.color
+		this.body = new CANNON.Body({
+			mass: 1,
+			position: new CANNON.Vec3(),
+			shape: new CANNON.Sphere(this.radius)
+		})
+	}
+	get radius() {
+		return Math.max(this.scale.x, this.scale.y, this.scale.z)
+	}
+	set radius(value) {
+		this.scale.set(value, value, value)
+	}
+}
+
+class Plane extends THREE.Mesh {
+	constructor() {
+		const geometry = new THREE.PlaneBufferGeometry(5, 5);
+		const material = new THREE.MeshBasicMaterial({ color: 0xFFFFFF, side: THREE.DoubleSide });
+		super(geometry, material)
+		this.color = this.material.color
+		this.body = new CANNON.Body({
+			mass: 0,
+			position: new CANNON.Vec3(),
+			shape: new CANNON.Plane()
+		})
+	}
+	get width() {
+		return this.geometry.parameters.width
+	}
+	set width(value) {
+		if (value != this.geometry.parameters.width) {
+			this.geometry = new THREE.PlaneBufferGeometry(value, this.geometry.parameters.height)
+		}
+	}
+	get height() {
+		return this.geometry.parameters.height
+	}
+	set height(value) {
+		if (value != this.geometry.parameters.height) {
+			this.geometry = new THREE.PlaneBufferGeometry(this.geometry.parameters.width, value)
+		}
+	}
+}
+
+class Box extends THREE.Mesh {
+	constructor() {
+		const geometry = new THREE.BoxGeometry();
+		const material = new THREE.MeshLambertMaterial({ transparent: true });
+		super(geometry, material);
+		this.color = this.material.color
+		this.body = new CANNON.Body({
+			mass: 1,
+			position: new CANNON.Vec3(),
+			shape: new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5))
+		})
+	}
+}
+
+class Scene extends THREE.Scene {
+	constructor() {
+		super()
+		this.world = new CANNON.World()
+		this.world.gravity.set(0, 0, -9.82)
+		// this.world.broadphase = new CANNON.NaiveBroadphase()
+	}
+	add() {
+		if (arguments.length) {
+			for (let object of arguments) {
+				super.add(object)
+				if (object.body) {
+					this.world.addBody(object.body)
+				}
+			}
+		}
+	}
+	step(fixedDeltaTime) {
+		for (let child of this.children) {
+			if (child.body) {
+				child.body.position.copy(child.position)
+				child.body.quaternion.copy(child.quaternion)
+			}
+		}
+		this.world.step(fixedDeltaTime)
+		for (let child of this.children) {
+			if (child.body) {
+				child.position.copy(child.body.position)
+				child.quaternion.copy(child.body.quaternion)
+			}
+		}
+	}
+	run(fixedDeltaTime) {
+		for (let child of this.children) {
+			if (child.body) {
+				child.body.position.copy(child.position)
+				child.body.quaternion.copy(child.quaternion)
+			}
+		}
+		if (fixedDeltaTime) {
+			const step = () => {
+				this.world.step(fixedDeltaTime)
+				for (let child of this.children) {
+					if (child.body) {
+						child.position.copy(child.body.position)
+						child.quaternion.copy(child.body.quaternion)
+					}
+				}
+			}
+			return setInterval(step, fixedDeltaTime)
+		}
+		return -1
 	}
 }
