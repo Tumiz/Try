@@ -41,8 +41,10 @@ var mouse = new THREE.Vector2();
 var selected = null
 
 window.onresize = () => {
-    canvas.style.width = window.innerWidth
-    canvas.style.height = window.innerHeight
+    canvas.style.width = canvas.parentElement.clientWidth
+    canvas.style.height = canvas.parentElement.clientHeight
+    controls.object.aspect = canvas.style.width / canvas.style.height;
+	controls.object.updateProjectionMatrix();
     renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 }
 window.onclick = (event) => {

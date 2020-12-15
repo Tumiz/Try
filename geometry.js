@@ -204,7 +204,7 @@ class Scene extends THREE.Scene {
 				child.body.quaternion.copy(child.quaternion)
 			}
 		}
-		this.world.step(fixedDeltaTime)
+		this.world.step(fixedDeltaTime / 1000)
 		for (let child of this.children) {
 			if (child.body) {
 				child.position.copy(child.body.position)
@@ -212,25 +212,28 @@ class Scene extends THREE.Scene {
 			}
 		}
 	}
-	run(fixedDeltaTime) {
+	run(duration, fixedDeltaTime = 10) {
 		for (let child of this.children) {
 			if (child.body) {
 				child.body.position.copy(child.position)
 				child.body.quaternion.copy(child.quaternion)
 			}
 		}
-		if (fixedDeltaTime) {
-			const step = () => {
-				this.world.step(fixedDeltaTime)
-				for (let child of this.children) {
-					if (child.body) {
-						child.position.copy(child.body.position)
-						child.quaternion.copy(child.body.quaternion)
-					}
+		const step = () => {
+			this.world.step(fixedDeltaTime / 1000)
+			for (let child of this.children) {
+				if (child.body) {
+					child.position.copy(child.body.position)
+					child.quaternion.copy(child.body.quaternion)
 				}
 			}
-			return setInterval(step, fixedDeltaTime)
+			if (duration > 0) {
+				duration -= fixedDeltaTime
+			} else {
+				clearInterval(timer)
+			}
 		}
-		return -1
+		let timer = setInterval(step, fixedDeltaTime)
+		return timer
 	}
 }
