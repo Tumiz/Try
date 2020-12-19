@@ -23,14 +23,9 @@ const renderer = new THREE.WebGLRenderer({
 });
 renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 
-const light = new THREE.PointLight(0xffffff, 1);
-light.position.set(0, 0, 3000)
-scene.add(light)
-scene.add(new THREE.AxesHelper(5))
-
 const controls = new OrbitControls(perspCamera, orthoCamera, renderer.domElement);
 const animate = function () {
-    light.position.copy(controls.object.position)
+    scene.light.position.copy(controls.object.position)
     requestAnimationFrame(animate);
     renderer.render(scene, controls.object);
 };
@@ -43,9 +38,15 @@ var selected = null
 window.onresize = () => {
     canvas.style.width = canvas.parentElement.clientWidth
     canvas.style.height = canvas.parentElement.clientHeight
-    controls.object.aspect = canvas.style.width / canvas.style.height;
-	controls.object.updateProjectionMatrix();
+    controls.object.aspect = canvas.clientWidth / canvas.clientHeight
+    controls.object.updateProjectionMatrix()
+	controls.update()
     renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+}
+window.ondblclick = (event) => {
+    controls.object.position.set(0,0,30)
+    controls.target.set(0,0,0)
+    controls.update()
 }
 window.onclick = (event) => {
 

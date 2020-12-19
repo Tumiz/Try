@@ -114,6 +114,10 @@ class Cylinder extends THREE.Mesh {
 		this.bottomCenter.copy(value)
 		this.position.copy(new THREE.Vector3().addVectors(value, this.axis.multiplyScalar(this.geometry.parameters.height / 2)))
 	}
+	updatePhysics(){
+		this.body.position.copy(this.position)
+		this.body.quaternion.copy(this.quaternion)
+	}
 }
 
 class Sphere extends THREE.Mesh {
@@ -133,6 +137,11 @@ class Sphere extends THREE.Mesh {
 	}
 	set radius(value) {
 		this.scale.set(value, value, value)
+	}
+	updatePhysics(){
+		this.body.position.copy(this.position)
+		this.body.quaternion.copy(this.quaternion)
+		this.body.shapes[0].radius
 	}
 }
 
@@ -164,6 +173,10 @@ class Plane extends THREE.Mesh {
 			this.geometry = new THREE.PlaneBufferGeometry(this.geometry.parameters.width, value)
 		}
 	}
+	updatePhysics(){
+		this.body.position.copy(this.position)
+		this.body.quaternion.copy(this.quaternion)
+	}
 }
 
 class Box extends THREE.Mesh {
@@ -178,11 +191,22 @@ class Box extends THREE.Mesh {
 			shape: new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5))
 		})
 	}
+	updatePhysics(){
+		this.body.position.copy(this.position)
+		this.body.quaternion.copy(this.quaternion)
+		this.body.shapes[0].halfExtents.copy(this.scale.multiplyScalar(0.5))
+	}
 }
 
 class Scene extends THREE.Scene {
 	constructor() {
 		super()
+		this.light = new THREE.PointLight(0xffffff, 1);
+		this.light.position.set(0, 0, 3000)
+		super.add(this.light)
+		super.add(new THREE.AxesHelper(5))
+		this.objects = new THREE.Object3D()
+		super.add(this.objects)
 		this.world = new CANNON.World()
 		this.world.gravity.set(0, 0, -9.82)
 		// this.world.broadphase = new CANNON.NaiveBroadphase()
@@ -190,7 +214,7 @@ class Scene extends THREE.Scene {
 	add() {
 		if (arguments.length) {
 			for (let object of arguments) {
-				super.add(object)
+				this.objects.add(object)
 				if (object.body) {
 					this.world.addBody(object.body)
 				}
@@ -202,6 +226,7 @@ class Scene extends THREE.Scene {
 			if (child.body) {
 				child.body.position.copy(child.position)
 				child.body.quaternion.copy(child.quaternion)
+				child.body.shapes[0].halfExtents.copy(child.scale.multiplyScalar(0.5))
 			}
 		}
 		this.world.step(fixedDeltaTime / 1000)
@@ -215,8 +240,7 @@ class Scene extends THREE.Scene {
 	run(duration, fixedDeltaTime = 10) {
 		for (let child of this.children) {
 			if (child.body) {
-				child.body.position.copy(child.position)
-				child.body.quaternion.copy(child.quaternion)
+				child.updatePhysics()
 			}
 		}
 		const step = () => {
@@ -235,5 +259,27 @@ class Scene extends THREE.Scene {
 		}
 		let timer = setInterval(step, fixedDeltaTime)
 		return timer
+	}
+	set(json){
+		this.objects.clear()
+		for(let key in json){
+			if(key.match(/^.*[A-Z]+.*$/)){
+				let data = json[key]
+				let object = eval("new "+key+"()")
+				this.add(object)
+				for(let key in data){
+					if(key == 'id'){
+						window[data.id]=object
+					}else{
+						let property = object[key]
+						if(property.copy){
+							property.copy(data[key])
+						}else{
+							object[key]=data[key]
+						}
+					}
+				}
+			}
+		}
 	}
 }
