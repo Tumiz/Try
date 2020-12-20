@@ -13,5 +13,6 @@ class Rotation extends THREE.Quaternion{
     }
     setFromEulerNumber(x,y,z,order='XYZ'){
         this.setFromEuler(new THREE.Euler(x,y,z,order))
+        return this
     }
 }

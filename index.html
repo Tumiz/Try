@@ -3,20 +3,68 @@
 <title>Try</title>
 
 <body style="margin: 0cm;">
-    <div style="position:absolute">
-        <span id="info" style="color:blue;background-color:white;word-break:break-all;word-wrap:break-word;">
-            0 s</span>
-    </div>
     <canvas id="canvas" style="
         position: absolute;
         width: 100%;
-        height: 100%;"></canvas>
+        height: 100%;">
+    </canvas>
+    <div style="position:absolute">
+        <span id="info" style="
+            color: white;
+            opacity: 0;
+            word-break:break-all;
+            word-wrap:break-word;
+            display: block;
+            height: 20px;">
+        </span>
+        <textarea id="codes" style="
+            display: block;
+            color: white;
+            background-color:rgb(12, 12, 12);
+            opacity: 0.5;
+            width: 300px;
+            height: 600px;
+            border: transparent;"
+            onblur="eval('scene.set('+this.value+')')">
+            {
+                Sphere:{ 
+                    id:"sphere",
+                    color:[1,0,0], 
+                    radius:1.5,
+                    position: [0,0,5],
+                    mass:2
+                },
+                Box:{
+                    id:"box",
+                    color:"green",
+                    scale:[1,2,3],
+                    position:[3,3,10],
+                    rotation:[0,0.2,0]
+                },
+                Cylinder:{
+                    id:"cylinder",
+                    color:"grey",
+                    radiusTop:1,
+                    radiusBottom:1,
+                    height:0.1,
+                    position:[2,2,3],
+                    rotation:[0,0,1,0.3]
+                },
+                Plane:{
+                    color: 0x111,
+                    width:10,
+                    height:10,
+                }
+            }
+        </textarea>
+    </div>
 </body>
 <script src="https://unpkg.com/cannon@0.6.2/build/cannon.js"></script>
 <script src="https://unpkg.com/three@0.123.0/build/three.min.js"></script>
 <script src="orbit.js"></script>
 <script src="transform.js"></script>
 <script src="geometry.js"></script>
+<script src="engine.js"></script>
 <script src="main.js"></script>
 
 </html>

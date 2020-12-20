@@ -114,23 +114,29 @@ class Cylinder extends THREE.Mesh {
 		this.bottomCenter.copy(value)
 		this.position.copy(new THREE.Vector3().addVectors(value, this.axis.multiplyScalar(this.geometry.parameters.height / 2)))
 	}
-	updatePhysics(){
-		this.body.position.copy(this.position)
-		this.body.quaternion.copy(this.quaternion)
+	initPhysics() {
+		let orientation = new THREE.Quaternion().multiplyQuaternions(this.quaternion, new Rotation(1, 0, 0, Math.PI/2))
+		this.body = new CANNON.Body({
+			mass: this.mass?this.mass:1,
+			position: new CANNON.Vec3().copy(this.position),
+			quaternion: new CANNON.Quaternion().copy(orientation),
+			shape: new CANNON.Cylinder(this.radiusTop, this.radiusBottom, this.height, 20),
+		})
+		return this.body
+	}
+	updatePhysics() {
+		this.position.copy(this.body.position)
+		let orientation = new THREE.Quaternion().copy(this.body.quaternion).multiply(new Rotation(1, 0, 0, Math.PI/2))
+		this.quaternion.copy(orientation)
 	}
 }
 
 class Sphere extends THREE.Mesh {
 	constructor() {
 		var geometry = new THREE.SphereGeometry(1, 32, 32);
-		const material = new THREE.MeshLambertMaterial({ transparent: true, color: 0x00ff00 });
+		const material = new THREE.MeshLambertMaterial({ transparent: true});
 		super(geometry, material)
 		this.color = this.material.color
-		this.body = new CANNON.Body({
-			mass: 1,
-			position: new CANNON.Vec3(),
-			shape: new CANNON.Sphere(this.radius)
-		})
 	}
 	get radius() {
 		return Math.max(this.scale.x, this.scale.y, this.scale.z)
@@ -138,10 +144,15 @@ class Sphere extends THREE.Mesh {
 	set radius(value) {
 		this.scale.set(value, value, value)
 	}
-	updatePhysics(){
+	initPhysics() {
+		this.body = new CANNON.Body({
+			mass: this.mass?this.mass:1,
+			position: new CANNON.Vec3(),
+			shape: new CANNON.Sphere(this.radius)
+		})
 		this.body.position.copy(this.position)
 		this.body.quaternion.copy(this.quaternion)
-		this.body.shapes[0].radius
+		return this.body
 	}
 }
 
@@ -151,11 +162,6 @@ class Plane extends THREE.Mesh {
 		const material = new THREE.MeshBasicMaterial({ color: 0xFFFFFF, side: THREE.DoubleSide });
 		super(geometry, material)
 		this.color = this.material.color
-		this.body = new CANNON.Body({
-			mass: 0,
-			position: new CANNON.Vec3(),
-			shape: new CANNON.Plane()
-		})
 	}
 	get width() {
 		return this.geometry.parameters.width
@@ -173,9 +179,14 @@ class Plane extends THREE.Mesh {
 			this.geometry = new THREE.PlaneBufferGeometry(this.geometry.parameters.width, value)
 		}
 	}
-	updatePhysics(){
-		this.body.position.copy(this.position)
-		this.body.quaternion.copy(this.quaternion)
+	initPhysics() {
+		this.body = new CANNON.Body({
+			mass: 0,
+			position: new CANNON.Vec3().copy(this.position),
+			quaternion: new CANNON.Quaternion().copy(this.quaternion),
+			shape: new CANNON.Plane()
+		})
+		return this.body
 	}
 }
 
@@ -185,101 +196,14 @@ class Box extends THREE.Mesh {
 		const material = new THREE.MeshLambertMaterial({ transparent: true });
 		super(geometry, material);
 		this.color = this.material.color
+	}
+	initPhysics() {
 		this.body = new CANNON.Body({
-			mass: 1,
-			position: new CANNON.Vec3(),
-			shape: new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5))
+			mass: this.mass?this.mass:1,
+			position: new CANNON.Vec3().copy(this.position),
+			quaternion: new CANNON.Quaternion().copy(this.quaternion),
+			shape: new CANNON.Box(new CANNON.Vec3().copy(this.scale.clone().multiplyScalar(0.5)))
 		})
-	}
-	updatePhysics(){
-		this.body.position.copy(this.position)
-		this.body.quaternion.copy(this.quaternion)
-		this.body.shapes[0].halfExtents.copy(this.scale.multiplyScalar(0.5))
-	}
-}
-
-class Scene extends THREE.Scene {
-	constructor() {
-		super()
-		this.light = new THREE.PointLight(0xffffff, 1);
-		this.light.position.set(0, 0, 3000)
-		super.add(this.light)
-		super.add(new THREE.AxesHelper(5))
-		this.objects = new THREE.Object3D()
-		super.add(this.objects)
-		this.world = new CANNON.World()
-		this.world.gravity.set(0, 0, -9.82)
-		// this.world.broadphase = new CANNON.NaiveBroadphase()
-	}
-	add() {
-		if (arguments.length) {
-			for (let object of arguments) {
-				this.objects.add(object)
-				if (object.body) {
-					this.world.addBody(object.body)
-				}
-			}
-		}
-	}
-	step(fixedDeltaTime) {
-		for (let child of this.children) {
-			if (child.body) {
-				child.body.position.copy(child.position)
-				child.body.quaternion.copy(child.quaternion)
-				child.body.shapes[0].halfExtents.copy(child.scale.multiplyScalar(0.5))
-			}
-		}
-		this.world.step(fixedDeltaTime / 1000)
-		for (let child of this.children) {
-			if (child.body) {
-				child.position.copy(child.body.position)
-				child.quaternion.copy(child.body.quaternion)
-			}
-		}
-	}
-	run(duration, fixedDeltaTime = 10) {
-		for (let child of this.children) {
-			if (child.body) {
-				child.updatePhysics()
-			}
-		}
-		const step = () => {
-			this.world.step(fixedDeltaTime / 1000)
-			for (let child of this.children) {
-				if (child.body) {
-					child.position.copy(child.body.position)
-					child.quaternion.copy(child.body.quaternion)
-				}
-			}
-			if (duration > 0) {
-				duration -= fixedDeltaTime
-			} else {
-				clearInterval(timer)
-			}
-		}
-		let timer = setInterval(step, fixedDeltaTime)
-		return timer
-	}
-	set(json){
-		this.objects.clear()
-		for(let key in json){
-			if(key.match(/^.*[A-Z]+.*$/)){
-				let data = json[key]
-				let object = eval("new "+key+"()")
-				this.add(object)
-				for(let key in data){
-					if(key == 'id'){
-						window[data.id]=object
-					}else{
-						let property = object[key]
-						if(property.copy){
-							property.copy(data[key])
-						}else{
-							object[key]=data[key]
-						}
-					}
-				}
-			}
-		}
+		return this.body
 	}
 }

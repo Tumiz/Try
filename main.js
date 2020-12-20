@@ -2,7 +2,7 @@
 // Distributed under the terms of the GPL-3.0 License.
 var objects = {}
 const scene = new Scene();
-scene.background = new THREE.Color(0x111111)
+scene.background = new THREE.Color("black")
 var fov_y = 60
 var aspect = canvas.clientWidth / canvas.clientHeight;
 const perspCamera = new THREE.PerspectiveCamera(fov_y, aspect, 1, 10000);
@@ -38,13 +38,17 @@ var selected = null
 window.onresize = () => {
     canvas.style.width = canvas.parentElement.clientWidth
     canvas.style.height = canvas.parentElement.clientHeight
-    controls.object.aspect = canvas.clientWidth / canvas.clientHeight
-    controls.object.updateProjectionMatrix()
+    perspCamera.aspect = canvas.clientWidth / canvas.clientHeight
+    perspCamera.updateProjectionMatrix()
+    orthoCamera.left = orthoCamera.bottom * perspCamera.aspect
+    orthoCamera.right = - orthoCamera.left
+    orthoCamera.updateProjectionMatrix()
 	controls.update()
     renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 }
 window.ondblclick = (event) => {
-    controls.object.position.set(0,0,30)
+    let direction = new THREE.Vector3().subVectors(controls.object.position, controls.target)
+    controls.object.position.copy(direction)
     controls.target.set(0,0,0)
     controls.update()
 }
