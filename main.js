@@ -106,3 +106,44 @@ function infof() {
         + "  position:" + selected.position.x.toFixed(3) + "," + selected.position.y.toFixed(3) + "," + selected.position.z.toFixed(3)
         + "  rotation:" + selected.rotation.x.toFixed(3) + "," + selected.rotation.y.toFixed(3) + "," + selected.rotation.z.toFixed(3) : "")
 }
+let c = new Cylinder
+
+c.radiusBottom=0
+c.radiusTop=2.7
+c.height = 7.5
+c.axis = new THREE.Vector3(1,1,1)
+c.topCenter=new THREE.Vector3(3,3,3)
+c.material.opacity = 0.9
+c.color.setColorName("magenta")
+
+scene.add(c)
+let d= new Cylinder
+d.radiusBottom=0
+d.radiusTop=2.5
+d.height = 7.5
+d.axis = new THREE.Vector3(1,1,1)
+d.topCenter=new THREE.Vector3(4,4,4)
+d.material.opacity = 0.6
+d.color.setColorName("dodgerblue")
+scene.add(d)
+let e= new Cylinder
+e.radiusBottom=0
+e.radiusTop=2.6
+e.height = 7.5
+e.axis = new THREE.Vector3(1,1,1)
+e.topCenter=new THREE.Vector3(3.5,3.5,3.5)
+e.material.opacity = 0.7
+e.color.setColorName("white")
+scene.add(e)
+for (let i=0;i<300;i++){
+    let points = []
+    for (let j=0;j<10;j++){
+        points.push([Math.random(),Math.random(),Math.random()])
+    }
+    let data = {
+        "serial": true,
+        "data": points,
+        "color": Math.random()*0xffffff
+    }
+    Arrow.proc(scene, data)
+}

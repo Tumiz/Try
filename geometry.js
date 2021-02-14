@@ -207,3 +207,42 @@ class Box extends THREE.Mesh {
 		return this.body
 	}
 }
+
+class Arrow extends THREE.Object3D {
+	constructor() {
+		super()
+		this.header = new Cylinder
+		this.header.radiusTop = 0.2
+		this.header.radiusBottom = 0.
+		this.header.height = 0.4
+		this.body = new Line
+		this.add(this.header, this.body)
+	}
+	set(startPoint, endPoint, color) {
+		this.body.set([startPoint, endPoint])
+		this.header.axis = new THREE.Vector3().subVectors(endPoint, startPoint)
+		this.header.topCenter = endPoint
+		this.header.color.set(color)
+		this.body.color.set(color)
+		return this
+	}
+	static proc(scene, data) {
+		let vectors = new THREE.Object3D
+		let startPoint = new THREE.Vector3
+		if (data.serial) {
+			for (let step of data.data) {
+				let endPoint = new THREE.Vector3(startPoint.x + step[0], startPoint.y + step[1], startPoint.z + step[2])
+				let arrow = new Arrow().set(startPoint, endPoint, data.color)
+				startPoint.copy(endPoint)
+				vectors.add(arrow)
+			}
+		} else {
+			for (let step of data.data) {
+				let endPoint = new THREE.Vector3(startPoint.x + step[0], startPoint.y + step[1], startPoint.z + step[2])
+				let arrow = new Arrow().set(startPoint, endPoint, data.color)
+				vectors.add(arrow)
+			}
+		}
+		scene.add(vectors)
+	}
+}

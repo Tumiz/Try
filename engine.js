@@ -34,7 +34,7 @@ class Scene extends THREE.Scene {
         this.light = new THREE.PointLight(0xffffff, 1);
         this.light.position.set(0, 0, 3000)
         super.add(this.light)
-        super.add(new THREE.AxesHelper(5))
+        // super.add(new THREE.AxesHelper(5))
         this.objects = new THREE.Object3D()
         super.add(this.objects)
     }
